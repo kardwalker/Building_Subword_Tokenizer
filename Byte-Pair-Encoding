@@ -1,1 +1,9 @@
 # GPT , GPT-2 , RoBERTa , BART ,DEBERTa
+
+
+
+!pip install datasets
+from datasets import load_dataset
+
+
+ds = load_dataset("proj-persona/PersonaHub", "knowledge")
