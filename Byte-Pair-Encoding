@@ -7,3 +7,56 @@ from datasets import load_dataset
 
 
 ds = load_dataset("proj-persona/PersonaHub", "knowledge")
+from collections import defaultdict
+
+# Pre-tokenize the corpus and compute word frequencies
+wordsfreq = defaultdict(int)
+corpus = [ """Before 2017, there were a few language models that were large as compared to capacities then available.
+In the 1990s, the IBM alignment models pioneered statistical language modelling. 
+A smoothed n-gram model in 2001 trained on 0.3 billion words achieved state-of-the-art perplexity at the time.
+[4] In the 2000s, as Internet use became prevalent, some researchers constructed Internet-scale language datasets ("web as corpus"[5]),
+upon which they trained statistical language models.[6][7] In 2009, in most language processing tasks,
+statistical language models dominated over symbolic language models because they can usefully ingest large datasets.
+
+After neural networks became dominant in image processing around 2012,[9] they were applied to language modelling as well.
+Google converted its translation service to Neural Machine Translation in 2016. Because it preceded the existence of transformers, 
+it was done by seq2seq deep LSTM networks.
+"""]
+for text in corpus:
+    words_with_offsets = pre_tokenize_str(text)
+    words = [word for word, offset in words_with_offsets]
+    for word in words:
+        wordsfreq[word] += 1
+
+print("Word frequencies:", wordsfreq)
+
+# Initialize splits
+splits = {word: list(word) for word in wordsfreq.keys()}
+
+# Compute pair frequencies
+def compute_pair_freq(splits):
+    pair_freqs = defaultdict(int)
+    for word, freq in wordsfreq.items():
+        split = splits[word]
+        if len(split) == 1:
+            continue
+        for i in range(len(split) - 1):
+            pair = (split[i], split[i+1])
+            pair_freqs[pair] += freq
+    return pair_freqs
+
+# Merge the best pair
+def merge_pair(a, b, splits):
+    for word in wordsfreq:
+        split = splits[word]
+        if len(split) == 1:
+            continue
+        i = 0
+        while i < len(split) - 1:
+            if split[i] == a and split[i+1] == b:
+                split[i:i+2] = [a + b]
+            else:
+                i += 1
+        splits[word] = split  # Update the splits dictionary
+    return splits
+
